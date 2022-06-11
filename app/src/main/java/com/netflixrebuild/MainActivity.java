@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(mainAdapter);
     }
 
-    private static class MovieHolder extends RecyclerView.ViewHolder {
+    static class MovieHolder extends RecyclerView.ViewHolder {
 
         final ImageView imageViewCover;
 
@@ -123,5 +123,4 @@ public class MainActivity extends AppCompatActivity {
             return movies.size();
         }
     }
-
 }
