@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import com.netflixrebuild.model.Category;
 import com.netflixrebuild.model.Movie;
 import com.netflixrebuild.util.CategoryTask;
+import com.netflixrebuild.util.ImageDownloaderTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,9 +54,15 @@ public class MainActivity extends AppCompatActivity implements CategoryTask.Cate
 
         final ImageView imageViewCover;
 
-        public MovieHolder(@NonNull View itemView) {
+        public MovieHolder(@NonNull View itemView, final OnItemClickListener onItemClickListener) {
             super(itemView);
             imageViewCover = itemView.findViewById(R.id.image_view_cover);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onItemClickListener.onClick(getAdapterPosition());
+                }
+            });
         }
     }
 
@@ -103,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements CategoryTask.Cate
         }
     }
 
-    private class MovieAdapter extends RecyclerView.Adapter<MovieHolder> {
+    private class MovieAdapter extends RecyclerView.Adapter<MovieHolder> implements OnItemClickListener{
 
         private final List<Movie> movies;
 
@@ -111,16 +119,26 @@ public class MainActivity extends AppCompatActivity implements CategoryTask.Cate
             this.movies = movies;
         }
 
+        @Override
+        public void onClick(int position) {
+            if (movies.get(position).getId() <= 3) {
+                Intent intent = new Intent(MainActivity.this, MovieActivity.class);
+                intent.putExtra("id", movies.get(position).getId());
+                startActivity(intent);
+            }
+        }
+
         @NonNull
         @Override
         public MovieHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new MovieHolder(getLayoutInflater().inflate(R.layout.movie_item, parent, false));
+            View view = getLayoutInflater().inflate(R.layout.movie_item, parent, false);
+            return new MovieHolder(view, this);
         }
 
         @Override
         public void onBindViewHolder(@NonNull MovieHolder holder, int position) {
             Movie movie = movies.get(position);
-//            holder.imageViewCover.setImageResource(movie.getCoverUrl());
+            new ImageDownloaderTask(holder.imageViewCover).execute(movie.getCoverUrl());
         }
 
         @Override
@@ -128,4 +146,9 @@ public class MainActivity extends AppCompatActivity implements CategoryTask.Cate
             return movies.size();
         }
     }
+
+    interface OnItemClickListener {
+        void onClick(int position);
+    }
+
 }
